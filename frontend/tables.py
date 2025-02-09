@@ -1,36 +1,13 @@
-"""
-This is the main script for the Streamlit app. It allows users to select a table from a Duckdb database and edit the
-"""
-
 import streamlit as st
 from backend.data_operations import get_tables, get_dataset, specific_config
 from backend.duckdb_connection import DuckdbConnection
 from backend.sql_statements import delete_cols, insert_cols, process_cols, select_cols
 
-st.set_page_config(layout="centered", page_title="Data Editor", page_icon="🧮")
-
-sf_conn = DuckdbConnection()
-
-st.title("Duckdb Table Editor ❄️")
-
-# Form to select the table
-with st.form("table_selector_form"):
-    tdf = get_tables()
-    tab_name = st.selectbox("Select Table to Edit:", tdf)
-    table_submit_button = st.form_submit_button("Select ...")
-
-if table_submit_button:
-    st.session_state['HAVE_TABLE'] = True
-    st.session_state['tab_name'] = tab_name
-    st.rerun()
-
-# Check if a table has been selected
-if 'HAVE_TABLE' in st.session_state:
-    tab_name = st.session_state['tab_name']
-    with st.form("data_editor_form"):
+def base_type(tab_name):
+    with st.form(f"{tab_name}_form"):
         dataset = get_dataset(tab_name)
-        st.caption("Edit the dataframe below")
-        edited_data = st.data_editor(dataset, use_container_width=True, num_rows="dynamic", key='ed', column_config=specific_config())
+        st.caption(tab_name)
+        edited_data = st.data_editor(dataset, use_container_width=True, num_rows="dynamic", key=f'ed-{tab_name}', column_config=specific_config())
         debug = st.checkbox('Debug')
         submit_button = st.form_submit_button("Submit")
 
